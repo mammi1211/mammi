@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>간단 방명록</title>
+  <title>실시간 방명록</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body {
       display: flex;
@@ -14,35 +15,41 @@
       color: #fff;
       padding: 20px;
     }
+    h1 {
+      font-size: 3rem;
+    }
     #guestbook-list {
       background: #222;
-      width: 80%;
-      max-width: 600px;
-      padding: 20px;
+      width: 90%;
+      max-width: 800px;
+      padding: 30px;
       border-radius: 12px;
       margin-bottom: 20px;
-      min-height: 200px;
+      min-height: 400px;
+      overflow-y: auto;
+      font-size: 1.5rem;
     }
     .entry {
       border-bottom: 1px solid #555;
-      padding: 6px 0;
+      padding: 12px 0;
     }
     #guestbook-form {
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      width: 80%;
-      max-width: 600px;
+      gap: 12px;
+      width: 90%;
+      max-width: 800px;
     }
     input, textarea, button {
-      padding: 10px;
-      font-size: 16px;
+      padding: 12px;
+      font-size: 1.2rem;
       border-radius: 6px;
       border: none;
       outline: none;
     }
     textarea {
       resize: vertical;
+      min-height: 80px;
     }
     button {
       cursor: pointer;
@@ -53,7 +60,7 @@
 </head>
 <body>
 
-  <h1>방명록</h1>
+  <h1>실시간 방명록</h1>
 
   <div id="guestbook-list">
     <!-- 글이 여기에 추가됩니다 -->
@@ -66,28 +73,71 @@
   </div>
 
 <script>
+  // 여기 Supabase URL과 Key 넣기
+  const SUPABASE_URL = "https://gfavzpkyevibhnqgdfbf.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_6ocCrY4Ksi5jGs4FmJgD8A_3lBpvMn9";
+  const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
   const listEl = document.getElementById('guestbook-list');
   const addBtn = document.getElementById('add-entry-btn');
 
-  addBtn.addEventListener('click', () => {
+  // 기존 글 불러오기
+  async function loadGuestbook() {
+    const { data, error } = await supabase
+      .from('guestbook')
+      .select('*')
+      .order('created_at', { ascending: true });
+    if (data) {
+      listEl.innerHTML = '';
+      data.forEach(entry => {
+        const div = document.createElement('div');
+        div.classList.add('entry');
+        div.innerHTML = `<strong>${entry.username}</strong>: ${entry.message}`;
+        listEl.appendChild(div);
+      });
+      listEl.scrollTop = listEl.scrollHeight;
+    }
+  }
+
+  // 새 글 추가
+  async function addEntry() {
     const username = document.getElementById('username').value.trim();
     const message = document.getElementById('message-input').value.trim();
+    if (!username || !message) return;
 
-    if (!username || !message) return; // 이름이나 메시지 없으면 무시
+    const { error } = await supabase
+      .from('guestbook')
+      .insert([{ username, message }]);
 
-    const div = document.createElement('div');
-    div.classList.add('entry');
-    div.innerHTML = `<strong>${username}</strong>: ${message}`;
+    if (!error) {
+      document.getElementById('username').value = '';
+      document.getElementById('message-input').value = '';
+    } else {
+      alert("글 작성 실패!");
+    }
+  }
 
-    listEl.appendChild(div);
+  // 실시간 구독
+  function listenGuestbook() {
+    supabase
+      .channel('guestbook_channel')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'guestbook' }, payload => {
+        const entry = payload.new;
+        const div = document.createElement('div');
+        div.classList.add('entry');
+        div.innerHTML = `<strong>${entry.username}</strong>: ${entry.message}`;
+        listEl.appendChild(div);
+        listEl.scrollTop = listEl.scrollHeight;
+      })
+      .subscribe();
+  }
 
-    // 입력창 초기화
-    document.getElementById('username').value = '';
-    document.getElementById('message-input').value = '';
+  // 이벤트 연결
+  addBtn.addEventListener('click', addEntry);
 
-    // 스크롤을 아래로
-    listEl.scrollTop = listEl.scrollHeight;
-  });
+  // 초기 로드
+  loadGuestbook();
+  listenGuestbook();
 </script>
 
 </body>
