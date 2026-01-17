@@ -34,7 +34,7 @@
   <div id="input-container">
     <div id="input-box">
       <input id="code-input" placeholder="코드를 입력하세요">
-      <button onclick="checkCode()">OK</button>
+      <button id="ok-btn">OK</button>
     </div>
     <div id="message"></div>
   </div>
@@ -47,11 +47,14 @@
     <div id="guestbook-form">
       <input id="username" placeholder="Username">
       <textarea id="message-input" placeholder="할 말 입력"></textarea>
-      <button onclick="addEntry()">글 남기기</button>
+      <button id="add-entry-btn">글 남기기</button>
     </div>
   </div>
 
 <script>
+document.addEventListener("DOMContentLoaded", function() {
+  console.log("파일 로드됨"); // 브라우저에서 확인
+
   // Supabase 연결
   const SUPABASE_URL = "https://gfavzpkyevibhnqgdfbf.supabase.co";
   const SUPABASE_KEY = "sb_publishable_6ocCrY4Ksi5jGs4FmJgD8A_3lBpvMn9";
@@ -61,12 +64,18 @@
   const guestbookCode = "방명록123";
   const listEl = document.getElementById('guestbook-list');
 
-  async function checkCode() {
-    const input = document.getElementById('code-input').value;
-    const messageEl = document.getElementById('message');
-    const inputContainer = document.getElementById('input-container');
-    const successScreen = document.getElementById('success-screen');
-    const guestbook = document.getElementById('guestbook');
+  const messageEl = document.getElementById('message');
+  const inputContainer = document.getElementById('input-container');
+  const successScreen = document.getElementById('success-screen');
+  const guestbook = document.getElementById('guestbook');
+
+  // 버튼 이벤트 연결
+  document.getElementById("ok-btn").addEventListener("click", checkCode);
+  document.getElementById("add-entry-btn").addEventListener("click", addEntry);
+
+  function checkCode() {
+    const input = document.getElementById('code-input').value.trim();
+    console.log("입력값:", `"${input}"`);
 
     if (input === correctCode) {
       messageEl.textContent = "✅ 코드 확인 완료!";
@@ -86,7 +95,6 @@
     }
   }
 
-  // 방명록 글 불러오기
   async function loadGuestbook() {
     const { data, error } = await supabase
       .from('guestbook')
@@ -101,11 +109,10 @@
         div.innerHTML = `<strong>${entry.username}</strong>: ${entry.message}`;
         listEl.appendChild(div);
       });
-      listEl.scrollTop = listEl.scrollHeight; // 항상 아래로 스크롤
+      listEl.scrollTop = listEl.scrollHeight;
     }
   }
 
-  // 방명록 글 추가
   async function addEntry() {
     const username = document.getElementById('username').value.trim();
     const message = document.getElementById('message-input').value.trim();
@@ -123,7 +130,6 @@
     }
   }
 
-  // Supabase 실시간 구독
   function listenGuestbook() {
     supabase
       .channel('guestbook_channel')
@@ -138,6 +144,7 @@
       .subscribe();
   }
 
+});
 </script>
 
 </body>
