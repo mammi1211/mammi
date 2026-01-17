@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>코드 인증 & 방명록 페이지</title>
+  <title>코드 인증 & 실시간 방명록</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body {
@@ -59,6 +59,7 @@
 
   const correctCode = "091211";
   const guestbookCode = "방명록123";
+  const listEl = document.getElementById('guestbook-list');
 
   async function checkCode() {
     const input = document.getElementById('code-input').value;
@@ -78,6 +79,7 @@
       guestbook.style.display = "flex";
       document.body.style.background = "#222";
       loadGuestbook();
+      listenGuestbook(); // 실시간 구독 시작
     } else {
       messageEl.textContent = "❌ 코드가 틀렸습니다!";
       messageEl.style.color = "#ff4444";
@@ -86,20 +88,20 @@
 
   // 방명록 글 불러오기
   async function loadGuestbook() {
-    const listEl = document.getElementById('guestbook-list');
-    listEl.innerHTML = '';
     const { data, error } = await supabase
       .from('guestbook')
       .select('*')
       .order('created_at', { ascending: true });
 
     if (data) {
+      listEl.innerHTML = '';
       data.forEach(entry => {
         const div = document.createElement('div');
         div.classList.add('entry');
         div.innerHTML = `<strong>${entry.username}</strong>: ${entry.message}`;
         listEl.appendChild(div);
       });
+      listEl.scrollTop = listEl.scrollHeight; // 항상 아래로 스크롤
     }
   }
 
@@ -109,18 +111,33 @@
     const message = document.getElementById('message-input').value.trim();
     if (!username || !message) return;
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('guestbook')
       .insert([{ username, message }]);
 
     if (!error) {
       document.getElementById('username').value = '';
       document.getElementById('message-input').value = '';
-      loadGuestbook();
     } else {
       alert("글 작성 실패!");
     }
   }
+
+  // Supabase 실시간 구독
+  function listenGuestbook() {
+    supabase
+      .channel('guestbook_channel')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'guestbook' }, payload => {
+        const entry = payload.new;
+        const div = document.createElement('div');
+        div.classList.add('entry');
+        div.innerHTML = `<strong>${entry.username}</strong>: ${entry.message}`;
+        listEl.appendChild(div);
+        listEl.scrollTop = listEl.scrollHeight;
+      })
+      .subscribe();
+  }
+
 </script>
 
 </body>
