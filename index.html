@@ -1,19 +1,18 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>실시간 방명록</title>
-  <!-- Supabase JS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body {
+      background: #111;
+      color: #fff;
+      font-family: Arial, sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
-      font-family: Arial, sans-serif;
-      background: #111;
-      color: #fff;
       padding: 20px;
     }
     h1 {
@@ -24,11 +23,11 @@
       background: #222;
       width: 90%;
       max-width: 800px;
-      padding: 30px;
-      border-radius: 12px;
-      margin-bottom: 20px;
       min-height: 400px;
+      border-radius: 12px;
+      padding: 30px;
       overflow-y: auto;
+      margin-bottom: 20px;
       font-size: 1.5rem;
     }
     .entry {
@@ -36,11 +35,11 @@
       padding: 12px 0;
     }
     #guestbook-form {
+      width: 90%;
+      max-width: 800px;
       display: flex;
       flex-direction: column;
       gap: 12px;
-      width: 90%;
-      max-width: 800px;
     }
     input, textarea, button {
       padding: 12px;
@@ -54,116 +53,91 @@
       min-height: 80px;
     }
     button {
-      cursor: pointer;
       background: #28a745;
       color: #fff;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-
   <h1>실시간 방명록</h1>
 
-  <div id="guestbook-list">
-    <!-- 글이 여기에 추가됩니다 -->
-  </div>
+  <div id="guestbook-list"></div>
 
   <div id="guestbook-form">
-    <input id="username" placeholder="이름">
+    <input id="username" placeholder="이름" />
     <textarea id="message-input" placeholder="할 말 입력"></textarea>
     <button id="add-entry-btn">글 남기기</button>
   </div>
 
-<script>
-  // --------------------------
-  // Supabase 연결
-  // --------------------------
-  const SUPABASE_URL = "https://gfavzpkyevibhnqgdfbf.supabase.co";
-  const SUPABASE_KEY = "sb_publishable_6ocCrY4Ksi5jGs4FmJgD8A_3lBpvMn9";
-  const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  <script>
+    const SUPABASE_URL = "https://gfavzpkyevibhnqgdfbf.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_6ocCrY4Ksi5jGs4FmJgD8A_3lBpvMn9";
+    const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  const listEl = document.getElementById('guestbook-list');
-  const addBtn = document.getElementById('add-entry-btn');
+    const listEl = document.getElementById("guestbook-list");
 
-  // --------------------------
-  // DOM 준비 후 이벤트 연결
-  // --------------------------
-  window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener("DOMContentLoaded", () => {
+      loadGuestbook();
+      listenGuestbook();
+      document
+        .getElementById("add-entry-btn")
+        .addEventListener("click", addEntry);
+    });
 
-    // 글 불러오기
-    loadGuestbook();
+    async function loadGuestbook() {
+      const { data, error } = await supabase
+        .from("guestbook")
+        .select("*")
+        .order("created_at", { ascending: true });
 
-    // 실시간 구독
-    listenGuestbook();
+      if (error) {
+        console.error("불러오기 실패:", error);
+        return;
+      }
 
-    // 버튼 이벤트
-    addBtn.addEventListener('click', addEntry);
-  });
-
-  // --------------------------
-  // 방명록 글 불러오기
-  // --------------------------
-  async function loadGuestbook() {
-    const { data, error } = await supabase
-      .from('guestbook')
-      .select('*')
-      .order('created_at', { ascending: true });
-
-    if (error) {
-      console.error("불러오기 실패:", error);
-      return;
+      listEl.innerHTML = "";
+      data.forEach(addEntryToDOM);
+      listEl.scrollTop = listEl.scrollHeight;
     }
 
-    listEl.innerHTML = '';
-    data.forEach(entry => addEntryToDOM(entry));
-    listEl.scrollTop = listEl.scrollHeight;
-  }
+    async function addEntry() {
+      const username = document.getElementById("username").value.trim();
+      const message = document.getElementById("message-input").value.trim();
 
-  // --------------------------
-  // 글 추가 함수
-  // --------------------------
-  async function addEntry() {
-    const username = document.getElementById('username').value.trim();
-    const message = document.getElementById('message-input').value.trim();
-    if (!username || !message) return;
+      if (!username || !message) return;
 
-    const { error } = await supabase
-      .from('guestbook')
-      .insert([{ username, message }]);
+      const { error } = await supabase.from("guestbook").insert([{ username, message }]);
 
-    if (error) {
-      alert("글 작성 실패!");
-      console.error(error);
-    } else {
-      document.getElementById('username').value = '';
-      document.getElementById('message-input').value = '';
+      if (error) {
+        alert("글 작성 실패!");
+        console.error(error);
+      } else {
+        document.getElementById("username").value = "";
+        document.getElementById("message-input").value = "";
+      }
     }
-  }
 
-  // --------------------------
-  // 실시간 구독
-  // --------------------------
-  function listenGuestbook() {
-    supabase
-      .channel('guestbook_channel')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'guestbook' }, payload => {
-        addEntryToDOM(payload.new);
-      })
-      .subscribe();
-  }
+    function listenGuestbook() {
+      supabase
+        .channel("guestbook_channel")
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "guestbook" },
+          (payload) => {
+            addEntryToDOM(payload.new);
+          }
+        )
+        .subscribe();
+    }
 
-  // --------------------------
-  // 글 화면에 추가
-  // --------------------------
-  function addEntryToDOM(entry) {
-    const div = document.createElement('div');
-    div.classList.add('entry');
-    div.innerHTML = `<strong>${entry.username}</strong>: ${entry.message}`;
-    listEl.appendChild(div);
-    listEl.scrollTop = listEl.scrollHeight;
-  }
-
-</script>
-
+    function addEntryToDOM(entry) {
+      const div = document.createElement("div");
+      div.classList.add("entry");
+      div.innerHTML = `<strong>${entry.username}</strong>: ${entry.message}`;
+      listEl.appendChild(div);
+      listEl.scrollTop = listEl.scrollHeight;
+    }
+  </script>
 </body>
 </html>
