@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>실시간 방명록</title>
+  <!-- Supabase JS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body {
@@ -17,6 +18,7 @@
     }
     h1 {
       font-size: 3rem;
+      margin-bottom: 20px;
     }
     #guestbook-list {
       background: #222;
@@ -73,7 +75,9 @@
   </div>
 
 <script>
-  // 여기 Supabase URL과 Key 넣기
+  // --------------------------
+  // Supabase 연결
+  // --------------------------
   const SUPABASE_URL = "https://gfavzpkyevibhnqgdfbf.supabase.co";
   const SUPABASE_KEY = "sb_publishable_6ocCrY4Ksi5jGs4FmJgD8A_3lBpvMn9";
   const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -81,25 +85,43 @@
   const listEl = document.getElementById('guestbook-list');
   const addBtn = document.getElementById('add-entry-btn');
 
-  // 기존 글 불러오기
+  // --------------------------
+  // DOM 준비 후 이벤트 연결
+  // --------------------------
+  window.addEventListener('DOMContentLoaded', () => {
+
+    // 글 불러오기
+    loadGuestbook();
+
+    // 실시간 구독
+    listenGuestbook();
+
+    // 버튼 이벤트
+    addBtn.addEventListener('click', addEntry);
+  });
+
+  // --------------------------
+  // 방명록 글 불러오기
+  // --------------------------
   async function loadGuestbook() {
     const { data, error } = await supabase
       .from('guestbook')
       .select('*')
       .order('created_at', { ascending: true });
-    if (data) {
-      listEl.innerHTML = '';
-      data.forEach(entry => {
-        const div = document.createElement('div');
-        div.classList.add('entry');
-        div.innerHTML = `<strong>${entry.username}</strong>: ${entry.message}`;
-        listEl.appendChild(div);
-      });
-      listEl.scrollTop = listEl.scrollHeight;
+
+    if (error) {
+      console.error("불러오기 실패:", error);
+      return;
     }
+
+    listEl.innerHTML = '';
+    data.forEach(entry => addEntryToDOM(entry));
+    listEl.scrollTop = listEl.scrollHeight;
   }
 
-  // 새 글 추가
+  // --------------------------
+  // 글 추가 함수
+  // --------------------------
   async function addEntry() {
     const username = document.getElementById('username').value.trim();
     const message = document.getElementById('message-input').value.trim();
@@ -109,35 +131,38 @@
       .from('guestbook')
       .insert([{ username, message }]);
 
-    if (!error) {
+    if (error) {
+      alert("글 작성 실패!");
+      console.error(error);
+    } else {
       document.getElementById('username').value = '';
       document.getElementById('message-input').value = '';
-    } else {
-      alert("글 작성 실패!");
     }
   }
 
+  // --------------------------
   // 실시간 구독
+  // --------------------------
   function listenGuestbook() {
     supabase
       .channel('guestbook_channel')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'guestbook' }, payload => {
-        const entry = payload.new;
-        const div = document.createElement('div');
-        div.classList.add('entry');
-        div.innerHTML = `<strong>${entry.username}</strong>: ${entry.message}`;
-        listEl.appendChild(div);
-        listEl.scrollTop = listEl.scrollHeight;
+        addEntryToDOM(payload.new);
       })
       .subscribe();
   }
 
-  // 이벤트 연결
-  addBtn.addEventListener('click', addEntry);
+  // --------------------------
+  // 글 화면에 추가
+  // --------------------------
+  function addEntryToDOM(entry) {
+    const div = document.createElement('div');
+    div.classList.add('entry');
+    div.innerHTML = `<strong>${entry.username}</strong>: ${entry.message}`;
+    listEl.appendChild(div);
+    listEl.scrollTop = listEl.scrollHeight;
+  }
 
-  // 초기 로드
-  loadGuestbook();
-  listenGuestbook();
 </script>
 
 </body>
