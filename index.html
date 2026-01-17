@@ -3,148 +3,91 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>코드 인증 & 실시간 방명록</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <title>간단 방명록</title>
   <style>
     body {
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
-      height: 100vh;
+      font-family: Arial, sans-serif;
       background: #111;
       color: #fff;
-      font-family: Arial, sans-serif;
-      flex-direction: column;
-      transition: background 0.5s;
+      padding: 20px;
     }
-
-    #input-box { display: flex; gap: 10px; margin-bottom: 20px; }
-    input, textarea { padding: 12px; font-size: 16px; border-radius: 6px; border: none; outline: none; }
-    button { padding: 12px 20px; font-size: 16px; border-radius: 6px; border: none; cursor: pointer; background: #28a745; color: #fff; }
-    #message { margin-top: 10px; font-size: 16px; color: #ff0; }
-    #success-screen { display: none; font-size: 100px; font-weight: bold; text-align: center; }
-    #guestbook { display: none; flex-direction: column; width: 80%; max-width: 600px; margin-top: 20px; }
-    #guestbook-list { background: #222; padding: 20px; border-radius: 12px; height: 300px; overflow-y: auto; margin-bottom: 10px; }
-    .entry { border-bottom: 1px solid #555; padding: 6px 0; }
-    #guestbook-form { display: flex; flex-direction: column; gap: 10px; }
+    #guestbook-list {
+      background: #222;
+      width: 80%;
+      max-width: 600px;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      min-height: 200px;
+    }
+    .entry {
+      border-bottom: 1px solid #555;
+      padding: 6px 0;
+    }
+    #guestbook-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 80%;
+      max-width: 600px;
+    }
+    input, textarea, button {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+      outline: none;
+    }
+    textarea {
+      resize: vertical;
+    }
+    button {
+      cursor: pointer;
+      background: #28a745;
+      color: #fff;
+    }
   </style>
 </head>
 <body>
 
-  <div id="input-container">
-    <div id="input-box">
-      <input id="code-input" placeholder="코드를 입력하세요">
-      <button id="ok-btn">OK</button>
-    </div>
-    <div id="message"></div>
+  <h1>방명록</h1>
+
+  <div id="guestbook-list">
+    <!-- 글이 여기에 추가됩니다 -->
   </div>
 
-  <div id="success-screen">Hi.</div>
-
-  <!-- 방명록 -->
-  <div id="guestbook">
-    <div id="guestbook-list"></div>
-    <div id="guestbook-form">
-      <input id="username" placeholder="Username">
-      <textarea id="message-input" placeholder="할 말 입력"></textarea>
-      <button id="add-entry-btn">글 남기기</button>
-    </div>
+  <div id="guestbook-form">
+    <input id="username" placeholder="이름">
+    <textarea id="message-input" placeholder="할 말 입력"></textarea>
+    <button id="add-entry-btn">글 남기기</button>
   </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-  console.log("파일 로드됨"); // 브라우저에서 확인
-
-  // Supabase 연결
-  const SUPABASE_URL = "https://gfavzpkyevibhnqgdfbf.supabase.co";
-  const SUPABASE_KEY = "sb_publishable_6ocCrY4Ksi5jGs4FmJgD8A_3lBpvMn9";
-  const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-  const correctCode = "091211";
-  const guestbookCode = "방명록123";
   const listEl = document.getElementById('guestbook-list');
+  const addBtn = document.getElementById('add-entry-btn');
 
-  const messageEl = document.getElementById('message');
-  const inputContainer = document.getElementById('input-container');
-  const successScreen = document.getElementById('success-screen');
-  const guestbook = document.getElementById('guestbook');
-
-  // 버튼 이벤트 연결
-  document.getElementById("ok-btn").addEventListener("click", checkCode);
-  document.getElementById("add-entry-btn").addEventListener("click", addEntry);
-
-  function checkCode() {
-    const input = document.getElementById('code-input').value.trim();
-    console.log("입력값:", `"${input}"`);
-
-    if (input === correctCode) {
-      messageEl.textContent = "✅ 코드 확인 완료!";
-      inputContainer.style.display = "none";
-      successScreen.style.display = "block";
-      document.body.style.background = "#222";
-    } else if (input === guestbookCode) {
-      messageEl.textContent = "✅ 방명록 열기 완료!";
-      inputContainer.style.display = "none";
-      guestbook.style.display = "flex";
-      document.body.style.background = "#222";
-      loadGuestbook();
-      listenGuestbook(); // 실시간 구독 시작
-    } else {
-      messageEl.textContent = "❌ 코드가 틀렸습니다!";
-      messageEl.style.color = "#ff4444";
-    }
-  }
-
-  async function loadGuestbook() {
-    const { data, error } = await supabase
-      .from('guestbook')
-      .select('*')
-      .order('created_at', { ascending: true });
-
-    if (data) {
-      listEl.innerHTML = '';
-      data.forEach(entry => {
-        const div = document.createElement('div');
-        div.classList.add('entry');
-        div.innerHTML = `<strong>${entry.username}</strong>: ${entry.message}`;
-        listEl.appendChild(div);
-      });
-      listEl.scrollTop = listEl.scrollHeight;
-    }
-  }
-
-  async function addEntry() {
+  addBtn.addEventListener('click', () => {
     const username = document.getElementById('username').value.trim();
     const message = document.getElementById('message-input').value.trim();
-    if (!username || !message) return;
 
-    const { error } = await supabase
-      .from('guestbook')
-      .insert([{ username, message }]);
+    if (!username || !message) return; // 이름이나 메시지 없으면 무시
 
-    if (!error) {
-      document.getElementById('username').value = '';
-      document.getElementById('message-input').value = '';
-    } else {
-      alert("글 작성 실패!");
-    }
-  }
+    const div = document.createElement('div');
+    div.classList.add('entry');
+    div.innerHTML = `<strong>${username}</strong>: ${message}`;
 
-  function listenGuestbook() {
-    supabase
-      .channel('guestbook_channel')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'guestbook' }, payload => {
-        const entry = payload.new;
-        const div = document.createElement('div');
-        div.classList.add('entry');
-        div.innerHTML = `<strong>${entry.username}</strong>: ${entry.message}`;
-        listEl.appendChild(div);
-        listEl.scrollTop = listEl.scrollHeight;
-      })
-      .subscribe();
-  }
+    listEl.appendChild(div);
 
-});
+    // 입력창 초기화
+    document.getElementById('username').value = '';
+    document.getElementById('message-input').value = '';
+
+    // 스크롤을 아래로
+    listEl.scrollTop = listEl.scrollHeight;
+  });
 </script>
 
 </body>
