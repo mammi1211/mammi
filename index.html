@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>코드 인증 페이지</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #111;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      flex-direction: column;
+      transition: background 0.5s;
+    }
+
+    #input-box {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    input {
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+      outline: none;
+    }
+
+    button {
+      padding: 12px 20px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      background: #28a745;
+      color: #fff;
+    }
+
+    #message {
+      margin-top: 10px;
+      font-size: 16px;
+      color: #ff0;
+    }
+
+    #success-screen {
+      display: none;
+      font-size: 100px;
+      font-weight: bold;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="input-container">
+    <div id="input-box">
+      <input id="code-input" placeholder="코드를 입력하세요">
+      <button onclick="checkCode()">OK</button>
+    </div>
+    <div id="message"></div>
+  </div>
+
+  <div id="success-screen">천일이븅신.</div>
+
+  <script>
+    const correctCode = "091211"; // 여기서 지정한 코드
+
+    function checkCode() {
+      const input = document.getElementById('code-input').value;
+      const message = document.getElementById('message');
+      const inputContainer = document.getElementById('input-container');
+      const successScreen = document.getElementById('success-screen');
+
+      if(input === correctCode) {
+        message.textContent = "✅ 코드 확인 완료!";
+        inputContainer.style.display = "none"; // 입력창 숨기기
+        successScreen.style.display = "block"; // 성공 화면 표시
+        document.body.style.background = "#222"; // 배경 변경
+      } else {
+        message.textContent = "❌ 코드가 틀렸습니다!";
+        message.style.color = "#ff4444";
+      }
+    }
+  </script>
+
+</body>
+</html>
