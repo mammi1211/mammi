@@ -1,117 +1,114 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>✨ 실시간 방명록</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    /* 스타일 리셋 */
-    * {
-      margin: 0; padding: 0; box-sizing: border-box;
-    }
-    body {
-      background: #121212;
-      color: #eee;
-      font-family: 'Noto Sans KR', sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      min-height: 100vh;
-      padding: 20px;
-    }
-    h1 {
-      margin-bottom: 20px;
-      color: #ff4081;
-      text-shadow: 0 0 10px #ff4081aa;
-    }
-    .container {
-      width: 100%;
-      max-width: 640px;
-      background: #1e1e2f;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 0 15px #ff408144;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-    #guestbook-list {
-      height: 350px;
-      overflow-y: auto;
-      background: #27293d;
-      border-radius: 10px;
-      padding: 15px;
-      scrollbar-width: thin;
-      scrollbar-color: #ff4081 #1e1e2f;
-    }
-    #guestbook-list::-webkit-scrollbar {
-      width: 8px;
-    }
-    #guestbook-list::-webkit-scrollbar-thumb {
-      background: #ff4081;
-      border-radius: 4px;
-    }
-    .entry {
-      margin-bottom: 12px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid #444660;
-    }
-    .entry strong {
-      display: block;
-      font-size: 1.1rem;
-      color: #ff79c6;
-    }
-    .entry p {
-      margin-top: 4px;
-      white-space: pre-wrap;
-      line-height: 1.4;
-    }
-    .timestamp {
-      margin-top: 4px;
-      font-size: 0.8rem;
-      color: #9999aa;
-    }
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    input, textarea {
-      border-radius: 10px;
-      border: none;
-      padding: 12px 15px;
-      font-size: 1rem;
-      background: #2e2e42;
-      color: #eee;
-      resize: vertical;
-      outline-offset: 2px;
-      transition: outline-color 0.3s ease;
-    }
-    input:focus, textarea:focus {
-      outline: 2px solid #ff4081;
-      background: #3a3a58;
-    }
-    button {
-      background: #ff4081;
-      color: white;
-      font-weight: 700;
-      font-size: 1.1rem;
-      padding: 12px;
-      border-radius: 12px;
-      border: none;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-    button:hover:not(:disabled) {
-      background: #e03575;
-    }
-    button:disabled {
-      background: #aa5f7e;
-      cursor: not-allowed;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>실시간 방명록</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  /* 기본 스타일 초기화 */
+  * {
+    margin: 0; padding: 0; box-sizing: border-box;
+  }
+  body {
+    background-color: #121212;
+    color: #eee;
+    font-family: 'Noto Sans KR', sans-serif, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    min-height: 100vh;
+  }
+  h1 {
+    margin-bottom: 25px;
+    color: #ff4081;
+    text-shadow: 0 0 8px #ff4081aa;
+  }
+  .container {
+    max-width: 700px;
+    width: 100%;
+    background: #1e1e2f;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 0 15px #ff408177;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  #guestbook-list {
+    background: #27293d;
+    border-radius: 8px;
+    padding: 15px;
+    height: 400px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #ff4081 #1e1e2f;
+  }
+  #guestbook-list::-webkit-scrollbar {
+    width: 8px;
+  }
+  #guestbook-list::-webkit-scrollbar-thumb {
+    background: #ff4081;
+    border-radius: 4px;
+  }
+  .entry {
+    border-bottom: 1px solid #444660;
+    padding: 10px 0;
+  }
+  .entry strong {
+    color: #ff79c6;
+    font-size: 1.1rem;
+    display: block;
+  }
+  .entry p {
+    margin-top: 5px;
+    white-space: pre-wrap;
+  }
+  .timestamp {
+    margin-top: 4px;
+    color: #9999aa;
+    font-size: 0.8rem;
+  }
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  input, textarea {
+    border-radius: 10px;
+    border: none;
+    padding: 12px 15px;
+    font-size: 1rem;
+    background: #2e2e42;
+    color: #eee;
+    resize: vertical;
+    outline-offset: 2px;
+    transition: outline-color 0.3s ease;
+  }
+  input:focus, textarea:focus {
+    outline: 2px solid #ff4081;
+    background: #3a3a58;
+  }
+  button {
+    background: #ff4081;
+    color: white;
+    font-weight: 700;
+    font-size: 1.1rem;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  button:hover:not(:disabled) {
+    background: #e03575;
+  }
+  button:disabled {
+    background: #aa5f7e;
+    cursor: not-allowed;
+  }
+</style>
 </head>
 <body>
   <h1>✨ 실시간 방명록</h1>
@@ -125,11 +122,10 @@
   </div>
 
   <script>
-    // Supabase URL 및 키 (꼭 본인의 것으로 바꿔주세요)
+    // 자신의 Supabase 프로젝트 URL 및 공개 키로 변경하세요
     const SUPABASE_URL = "https://gfavzpkyevibhnqgdfbf.supabase.co";
     const SUPABASE_KEY = "sb_publishable_6ocCrY4Ksi5jGs4FmJgD8A_3lBpvMn9";
 
-    // supabase 인스턴스는 한 번만 선언!
     const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const guestbookList = document.getElementById("guestbook-list");
@@ -138,22 +134,22 @@
     const messageInput = document.getElementById("message-input");
     const addEntryBtn = document.getElementById("add-entry-btn");
 
-    // 페이지 로드 시 기존 글 불러오기 + 실시간 구독 시작
+    // 초기 글 로드 & 실시간 구독 시작
     window.addEventListener("DOMContentLoaded", () => {
-      fetchEntries();
-      subscribeGuestbook();
+      loadEntries();
+      startRealtimeSubscription();
     });
 
-    // 글 불러오기 함수
-    async function fetchEntries() {
+    // 기존 글들 불러오기
+    async function loadEntries() {
       const { data, error } = await supabase
-        .from("guestbook")
-        .select("*")
-        .order("created_at", { ascending: true });
+        .from('guestbook')
+        .select('*')
+        .order('created_at', { ascending: true });
 
       if (error) {
-        alert("글을 불러오는데 실패했습니다.");
-        console.error(error);
+        console.error("글 불러오기 실패:", error);
+        alert("글을 불러오는 데 문제가 발생했습니다.");
         return;
       }
 
@@ -162,14 +158,14 @@
       scrollToBottom();
     }
 
-    // 실시간 구독 함수
-    function subscribeGuestbook() {
+    // 실시간 구독 설정
+    function startRealtimeSubscription() {
       supabase
-        .channel("public:guestbook")
+        .channel('public:guestbook')
         .on(
-          "postgres_changes",
-          { event: "INSERT", schema: "public", table: "guestbook" },
-          (payload) => {
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'guestbook' },
+          payload => {
             addEntryToDOM(payload.new);
             scrollToBottom();
           }
@@ -177,15 +173,15 @@
         .subscribe();
     }
 
-    // 새 글 제출 이벤트
-    guestbookForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
+    // 글쓰기 폼 제출 처리
+    guestbookForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
 
       const username = usernameInput.value.trim();
       const message = messageInput.value.trim();
 
       if (!username || !message) {
-        alert("이름과 메시지를 모두 입력해주세요.");
+        alert("이름과 메시지를 모두 입력해 주세요.");
         return;
       }
 
@@ -193,7 +189,7 @@
       addEntryBtn.textContent = "저장 중...";
 
       const { error } = await supabase
-        .from("guestbook")
+        .from('guestbook')
         .insert([{ username, message }]);
 
       if (error) {
@@ -208,41 +204,42 @@
       addEntryBtn.textContent = "글 남기기";
     });
 
-    // DOM에 글 추가하는 함수
+    // DOM에 글 추가
     function addEntryToDOM(entry) {
-      const div = document.createElement("div");
-      div.className = "entry";
+      // 중복 방지를 위해 같은 글이 이미 있으면 추가하지 않음
+      if (document.getElementById(`entry-${entry.id}`)) return;
 
-      const timestamp = new Date(entry.created_at).toLocaleString("ko-KR", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
+      const div = document.createElement('div');
+      div.classList.add('entry');
+      div.id = `entry-${entry.id}`;
+
+      const formattedDate = new Date(entry.created_at).toLocaleString('ko-KR', {
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+        hour12: false
       });
 
       div.innerHTML = `
         <strong>${escapeHtml(entry.username)}</strong>
-        <p>${escapeHtml(entry.message).replace(/\n/g, "<br>")}</p>
-        <span class="timestamp">${timestamp}</span>
+        <p>${escapeHtml(entry.message).replace(/\n/g, '<br>')}</p>
+        <span class="timestamp">${formattedDate}</span>
       `;
+
       guestbookList.appendChild(div);
     }
 
-    // 스크롤 맨 아래로
+    // 스크롤을 가장 아래로 이동
     function scrollToBottom() {
       guestbookList.scrollTop = guestbookList.scrollHeight;
     }
 
-    // XSS 방지용 간단 이스케이프 함수
+    // 간단한 XSS 방지 함수
     function escapeHtml(text) {
-      return text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+      return text.replace(/&/g, '&amp;')
+                 .replace(/</g, '&lt;')
+                 .replace(/>/g, '&gt;')
+                 .replace(/"/g, '&quot;')
+                 .replace(/'/g, '&#039;');
     }
   </script>
 </body>
