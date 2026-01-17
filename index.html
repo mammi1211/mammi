@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>실시간 방명록</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -15,10 +15,7 @@
       align-items: center;
       padding: 20px;
     }
-    h1 {
-      font-size: 3rem;
-      margin-bottom: 20px;
-    }
+    h1 { font-size: 3rem; margin-bottom: 20px; }
     #guestbook-list {
       background: #222;
       width: 90%;
@@ -30,17 +27,8 @@
       margin-bottom: 20px;
       font-size: 1.5rem;
     }
-    .entry {
-      border-bottom: 1px solid #555;
-      padding: 12px 0;
-    }
-    #guestbook-form {
-      width: 90%;
-      max-width: 800px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
+    .entry { border-bottom: 1px solid #555; padding: 12px 0; }
+    #guestbook-form { width: 90%; max-width: 800px; display: flex; flex-direction: column; gap: 12px; }
     input, textarea, button {
       padding: 12px;
       font-size: 1.2rem;
@@ -48,15 +36,8 @@
       border: none;
       outline: none;
     }
-    textarea {
-      resize: vertical;
-      min-height: 80px;
-    }
-    button {
-      background: #28a745;
-      color: #fff;
-      cursor: pointer;
-    }
+    textarea { resize: vertical; min-height: 80px; }
+    button { background: #28a745; color: #fff; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -80,9 +61,7 @@
     window.addEventListener("DOMContentLoaded", () => {
       loadGuestbook();
       listenGuestbook();
-      document
-        .getElementById("add-entry-btn")
-        .addEventListener("click", addEntry);
+      document.getElementById("add-entry-btn").addEventListener("click", addEntry);
     });
 
     async function loadGuestbook() {
@@ -107,7 +86,9 @@
 
       if (!username || !message) return;
 
-      const { error } = await supabase.from("guestbook").insert([{ username, message }]);
+      const { error } = await supabase
+        .from("guestbook")
+        .insert([{ username, message }]);
 
       if (error) {
         alert("글 작성 실패!");
